@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const Notification = require('../models/Notification');
+const Application = require('../models/Application');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -12,7 +14,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-    const { name, email, password, mobile, role } = req.body;
+    const { name, email, password, mobile, role, companyId, state, city, companyName, officerCategory } = req.body;
 
     try {
         const userExists = await User.findOne({ email });
@@ -21,13 +23,29 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const user = await User.create({
+        const userData = {
             name,
             email,
             password,
             mobile,
             role,
-        });
+        };
+
+        if (role === 'entrepreneur') {
+            if (state) userData.state = state;
+            if (city) userData.city = city;
+            if (companyName) userData.companyName = companyName;
+            if (req.file) {
+                userData.certificate = req.file.path;
+            }
+        }
+
+        if (role === 'officer') {
+            userData.officerCategory = officerCategory;
+        }
+
+        const user = await User.create(userData);
+
 
         if (user) {
             res.status(201).json({
@@ -36,6 +54,10 @@ const registerUser = async (req, res) => {
                 email: user.email,
                 mobile: user.mobile,
                 role: user.role,
+                officerCategory: user.officerCategory,
+                state: user.state,
+                city: user.city,
+                companyName: user.companyName,
                 token: generateToken(user._id),
             });
         } else {
@@ -62,6 +84,10 @@ const loginUser = async (req, res) => {
                 email: user.email,
                 mobile: user.mobile,
                 role: user.role,
+                officerCategory: user.officerCategory,
+                state: user.state,
+                city: user.city,
+                companyName: user.companyName,
                 token: generateToken(user._id),
             });
         } else {
@@ -108,6 +134,10 @@ const updateUserProfile = async (req, res) => {
                 email: updatedUser.email,
                 mobile: updatedUser.mobile,
                 role: updatedUser.role,
+                officerCategory: updatedUser.officerCategory,
+                state: updatedUser.state,
+                city: updatedUser.city,
+                companyName: updatedUser.companyName,
                 token: generateToken(updatedUser._id),
             });
         } else {

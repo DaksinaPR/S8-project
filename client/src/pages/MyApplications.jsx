@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FileText, Clock, CheckCircle, XCircle, AlertCircle, Eye } from 'lucide-react';
+import { FileText, Clock, CheckCircle, XCircle, AlertCircle, Eye, Search, Calendar, ChevronRight } from 'lucide-react';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const MyApplications = () => {
+    useDocumentTitle('My Applications');
+
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,92 +31,110 @@ const MyApplications = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Approved': return 'bg-green-100 text-green-800';
-            case 'Rejected': return 'bg-red-100 text-red-800';
-            case 'ActionRequired': return 'bg-yellow-100 text-yellow-800';
-            default: return 'bg-blue-100 text-blue-800';
+            case 'Approved': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+            case 'Rejected': return 'bg-red-500/20 text-red-400 border-red-500/30';
+            case 'ActionRequired': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+            case 'Pending': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+            default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div></div>;
+    if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-6 pb-12 px-6 relative overflow-hidden">
-            {/* Background Decoration */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute top-[10%] left-[-5%] w-[30%] h-[30%] rounded-full bg-green-100/40 blur-3xl animate-blob"></div>
-                <div className="absolute bottom-[10%] right-[-5%] w-[35%] h-[35%] rounded-full bg-blue-100/40 blur-3xl animate-blob delay-200"></div>
-            </div>
+        <div className="relative min-h-screen pt-4 pb-12 w-full animate-fade-in text-white">
+            <div className="container mx-auto max-w-7xl">
 
-            <div className="container mx-auto relative z-10 max-w-6xl">
-                <div className="flex justify-end mb-8">
-                    <Link to="/apply" className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:bg-blue-700 hover:shadow-blue-500/40 transition transform hover:-translate-y-1 flex items-center animate-fade-in delay-200">
-                        <FileText className="h-5 w-5 mr-2" /> Start New Application
-                    </Link>
+                {/* Header Section */}
+                <div className="mb-10 text-left">
+                    <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center mb-2">
+                        <FileText className="h-8 w-8 mr-3 text-blue-500" /> My Applications
+                    </h1>
+                    <p className="text-gray-400 font-medium text-lg ml-11">Track and manage all your submitted government requests.</p>
                 </div>
 
-                {applications.length === 0 ? (
-                    <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl p-16 text-center border border-white/50 animate-slide-up">
-                        <div className="h-24 w-24 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                            <FileText className="h-12 w-12" />
-                        </div>
-                        <h3 className="text-3xl font-bold text-gray-800 mb-3">No applications found</h3>
-                        <p className="text-gray-500 mb-8 max-w-md mx-auto text-lg">You haven't submitted any applications yet. Start your entrepreneurial journey today!</p>
-                        <Link to="/apply" className="text-blue-600 font-bold hover:text-blue-800 hover:underline text-lg">Start New Application &rarr;</Link>
-                    </div>
-                ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up delay-100">
-                        {applications.map((app, index) => (
-                            <div key={app._id} className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full">
-                                {/* Card Header */}
-                                <div className="p-6 pb-4 flex justify-between items-start">
-                                    <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm group-hover:bg-blue-600 group-hover:text-white transition duration-300">
-                                        <FileText className="h-7 w-7" />
-                                    </div>
-                                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border
-                                        ${app.status === 'Approved' ? 'bg-green-50 text-green-700 border-green-200' :
-                                            app.status === 'Rejected' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                'bg-orange-50 text-orange-700 border-orange-200'}`}>
-                                        {app.status}
-                                    </span>
-                                </div>
-
-                                {/* Card Body */}
-                                <div className="px-6 flex-grow">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition">{app.businessName}</h3>
-                                    <p className="text-sm font-medium text-gray-500 flex items-center mb-4">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></span> {app.businessType}
-                                    </p>
-
-                                    <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
-                                        <div className="flex justify-between items-center text-sm mb-2">
-                                            <span className="text-gray-500">AI Readiness Score</span>
-                                            <span className="font-bold text-gray-800">{app.aiScore}%</span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                            <div className={`h-2 rounded-full transition-all duration-1000 ease-out 
-                                                ${app.aiScore > 80 ? 'bg-green-500' : app.aiScore > 50 ? 'bg-orange-500' : 'bg-red-500'}`}
-                                                style={{ width: `${app.aiScore}%` }}></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Card Footer */}
-                                <div className="p-6 pt-0 mt-auto border-t border-gray-50">
-                                    <div className="flex justify-between items-center mt-4">
-                                        <div className="text-xs text-gray-400 font-medium flex items-center">
-                                            <Clock className="h-3 w-3 mr-1" />
-                                            {new Date(app.createdAt).toLocaleDateString()}
-                                        </div>
-                                        <button className="text-blue-600 hover:text-blue-800 font-bold text-sm flex items-center group-hover:translate-x-1 transition">
-                                            Details <Eye className="h-4 w-4 ml-1" />
-                                        </button>
-                                    </div>
-                                </div>
+                {/* Search Bar Block */}
+                <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] border border-white/10 p-5 mb-10 overflow-hidden relative group">
+                    <div className="absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none bg-[radial-gradient(ellipse_at_left,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent"></div>
+                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 relative z-10">
+                        <div className="flex-1 relative w-full">
+                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-gray-400" />
                             </div>
-                        ))}
+                            <input
+                                type="text"
+                                className="w-full pl-12 pr-5 py-4 bg-gray-900/50 border border-white/10 rounded-2xl focus:bg-gray-800 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition font-medium text-white placeholder-gray-500 shadow-inner"
+                                placeholder="Search by Application ID or Name..."
+                            />
+                        </div>
+                        <button className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/40 transform hover:-translate-y-0.5 text-white font-bold py-4 px-8 rounded-2xl transition duration-300">
+                            Search Records
+                        </button>
                     </div>
-                )}
+                </div>
+
+                {/* Applications Table Block */}
+                <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/10 overflow-hidden">
+                    <div className="p-8 border-b border-white/10 flex flex-col md:flex-row justify-between items-center bg-white/5">
+                        <h2 className="text-2xl font-bold text-white mb-4 md:mb-0">Recent Submissions</h2>
+                        <span className="px-5 py-2 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-xl text-xs font-black tracking-widest shadow-inner">
+                            {applications.length} TOTAL RECORDS
+                        </span>
+                    </div>
+
+                    {applications.length === 0 ? (
+                        <div className="p-20 text-center animate-slide-up">
+                            <div className="h-28 w-28 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner border border-blue-500/20">
+                                <FileText className="h-12 w-12" />
+                            </div>
+                            <h3 className="text-3xl font-bold text-white mb-4 tracking-tight">Got a new idea?</h3>
+                            <p className="text-gray-400 mb-10 max-w-md mx-auto text-lg leading-relaxed">You haven't submitted any applications yet. Let's get your business moving today.</p>
+                            <Link to="/apply" className="inline-flex items-center text-white bg-blue-600 px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:bg-blue-500 transform transition duration-300 hover:-translate-y-1">
+                                Start New Application <ChevronRight className="ml-2 h-5 w-5" />
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-900/60 border-b border-white/10">
+                                        <th className="py-5 px-8 text-xs font-extrabold tracking-widest text-gray-500 uppercase w-1/6">App ID</th>
+                                        <th className="py-5 px-8 text-xs font-extrabold tracking-widest text-gray-500 uppercase w-1/4">Entity Name</th>
+                                        <th className="py-5 px-8 text-xs font-extrabold tracking-widest text-gray-500 uppercase w-1/6">Submitted</th>
+                                        <th className="py-5 px-8 text-xs font-extrabold tracking-widest text-gray-500 uppercase w-1/6">Status</th>
+                                        <th className="py-5 px-8 text-xs font-extrabold tracking-widest text-gray-500 uppercase">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {applications.map((app) => (
+                                        <tr key={app._id} className="hover:bg-white/5 transition duration-200 group">
+                                            <td className="py-6 px-8">
+                                                <span className="bg-gray-800 text-gray-400 text-xs font-mono font-bold px-3 py-1.5 rounded border border-gray-700 shadow-inner group-hover:bg-gray-700 transition">
+                                                    {app.applicationId || `APP-${new Date(app.createdAt).getFullYear()}-${app._id.substring(app._id.length - 8)}`}
+                                                </span>
+                                            </td>
+                                            <td className="py-6 px-8 font-bold text-white text-lg tracking-tight">
+                                                {app.businessName}
+                                            </td>
+                                            <td className="py-6 px-8 text-gray-400 font-medium flex items-center mt-1">
+                                                <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                                                {new Date(app.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            </td>
+                                            <td className="py-6 px-8">
+                                                <span className={`px-4 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider border ${getStatusColor(app.status || 'Pending')}`}>
+                                                    {app.status || 'Pending'}
+                                                </span>
+                                            </td>
+                                            <td className="py-6 px-8 text-gray-400 text-sm max-w-xs truncate font-medium" title={app.aiFeedback || '--'}>
+                                                {app.aiFeedback || '--'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

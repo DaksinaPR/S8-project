@@ -4,6 +4,9 @@ import AuthContext from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Chatbot from '../components/Chatbot';
 import { LogOut, Bell, Search } from 'lucide-react';
+import { io } from 'socket.io-client';
+import toast, { Toaster } from 'react-hot-toast';
+import { useEffect } from 'react';
 
 const DashboardLayout = () => {
     const { user, logout } = useContext(AuthContext);
@@ -12,41 +15,72 @@ const DashboardLayout = () => {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+    useEffect(() => {
+        if (user) {
+            // Connect to Socket.io server
+            const socket = io('http://localhost:5000');
+
+            // Emit setup with user ID to join personal room
+            socket.emit('setup', user._id);
+
+            // Listen for new notifications
+            socket.on('newNotification', (newSystemNotification) => {
+                toast.custom((t) => (
+                    <div
+                        className={`${t.visible ? 'animate-enter' : 'animate-leave'
+                            } max-w-md w-full bg-white shadow-2xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+                    >
+                        <div className="flex-1 w-0 p-4">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0 pt-0.5">
+                                    <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                                        <Bell className="h-5 w-5" />
+                                    </div>
+                                </div>
+                                <div className="ml-3 flex-1">
+                                    <p className="text-sm font-bold text-gray-900">
+                                        {newSystemNotification.title}
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        {newSystemNotification.message}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex border-l border-gray-200">
+                            <button
+                                onClick={() => toast.dismiss(t.id)}
+                                className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                ), { duration: 5000, position: 'top-right' });
+            });
+
+            return () => {
+                socket.disconnect();
+            };
+        }
+    }, [user]);
 
     return (
-        <div className="flex h-screen bg-gray-50 font-sans">
+        <div className="flex h-screen dark:bg-gray-950 bg-gray-50 font-sans selection:bg-blue-500/30 dark:text-white text-gray-900 transition-colors duration-300">
+            <Toaster />
             {/* Sidebar */}
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
             {/* Main Content Wrapper */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Top Header */}
-                <header className="bg-white shadow-sm h-16 flex items-center justify-between px-8 z-10 transition-all duration-300">
-                    {/* Search Bar (Optional visual element) */}
-                    <div className="flex items-center w-96 relative hidden md:block">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search applications, services..."
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
-                        />
-                    </div>
-
-                    {/* Right Side Actions */}
-                    <div className="flex items-center space-x-4">
-                        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-all relative">
-                            <Bell className="h-5 w-5" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                        </button>
-                    </div>
-                </header>
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Global Background Elements for Dashboard Area */}
+                <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px] animate-blob"></div>
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[120px] animate-blob delay-200"></div>
+                </div>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-auto p-8 relative">
+                <main className="flex-1 overflow-auto p-4 md:p-8 relative z-10 custom-scrollbar">
                     <Outlet />
                 </main>
             </div>

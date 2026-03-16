@@ -6,6 +6,11 @@ const applicationSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    applicationId: {
+        type: String,
+        required: true,
+        unique: true
+    },
     businessName: {
         type: String,
         required: true,
@@ -32,13 +37,32 @@ const applicationSchema = new mongoose.Schema({
         enum: ['Pending', 'Approved', 'Rejected', 'ActionRequired'],
         default: 'Pending',
     },
+    department: {
+        type: String,
+        required: true,
+        default: 'General Processing',
+    },
     aiScore: {
         type: Number,
         default: 0,
     },
+    aiCompletenessScore: {
+        type: Number,
+        default: 0,
+    },
+    aiClarityScore: {
+        type: Number,
+        default: 0,
+    },
+    aiMissingDocuments: [{
+        type: String,
+    }],
     aiFeedback: {
         type: String,
     },
+    rejectedFields: [{
+        type: String, // e.g., 'panNumber', 'addressLine1', 'documents.aadhar'
+    }]
 }, { timestamps: true });
 
 const Application = mongoose.model('Application', applicationSchema);

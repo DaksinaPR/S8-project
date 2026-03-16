@@ -21,8 +21,22 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['entrepreneur', 'officer', 'admin'],
+        enum: ['entrepreneur', 'officer', 'admin', 'client'],
         default: 'entrepreneur',
+    },
+    officerCategory: { type: String },
+    state: { type: String },
+    city: { type: String },
+    companyName: { type: String },
+    certificate: { type: String },
+    associatedCompany: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Application',
+        default: null,
+    },
+    isApprovedByEntrepreneur: {
+        type: Boolean,
+        default: false,
     },
 }, { timestamps: true });
 
